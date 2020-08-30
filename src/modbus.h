@@ -65,11 +65,28 @@ MODBUS_BEGIN_DECLS
 #define MODBUS_FC_WRITE_SINGLE_COIL         0x05
 #define MODBUS_FC_WRITE_SINGLE_REGISTER     0x06
 #define MODBUS_FC_READ_EXCEPTION_STATUS     0x07
+#define MODBUS_FC_DIAGNOSTICS               0x08
 #define MODBUS_FC_WRITE_MULTIPLE_COILS      0x0F
 #define MODBUS_FC_WRITE_MULTIPLE_REGISTERS  0x10
 #define MODBUS_FC_REPORT_SLAVE_ID           0x11
 #define MODBUS_FC_MASK_WRITE_REGISTER       0x16
 #define MODBUS_FC_WRITE_AND_READ_REGISTERS  0x17
+
+#define MODBUS_DIAGNOSTICS_RETURN_QUERY_DATA                     0
+#define MODBUS_DIAGNOSTICS_RESTART_COMMUNICATIONS                1
+#define MODBUS_DIAGNOSTICS_RETURN_DIAGNOSTIC_REGISTER            2
+#define MODBUS_DIAGNOSTICS_CHANGE_ASCIIINPUT_DELIMITER           3
+#define MODBUS_DIAGNOSTICS_FORCE_LISTEN_ONLY_MODE                4
+#define MODBUS_DIAGNOSTICS_CLEAR_COUNTERS                       10
+#define MODBUS_DIAGNOSTICS_RETURN_BUS_MESSAGE_COUNT             11
+#define MODBUS_DIAGNOSTICS_RETURN_BUS_COMMUNICATION_ERROR_COUNT 12
+#define MODBUS_DIAGNOSTICS_RETURN_BUS_EXCEPTION_ERROR_COUNT     13
+#define MODBUS_DIAGNOSTICS_RETURN_SERVER_MESSAGE_COUNT          14
+#define MODBUS_DIAGNOSTICS_RETURN_SERVER_NORESPONSE_COUNT       15
+#define MODBUS_DIAGNOSTICS_RETURN_SERVER_NAK_COUNT              16
+#define MODBUS_DIAGNOSTICS_RETURN_SERVER_BUSY_COUNT             17
+#define MODBUS_DIAGNOSTICS_RETURN_BUS_CHARACTER_OVERRUN_COUNT   18
+#define MODBUS_DIAGNOSTICS_CLEAR_OVERRUN_COUNTER                20
 
 #define MODBUS_BROADCAST_ADDRESS    0
 
@@ -216,6 +233,7 @@ MODBUS_API int modbus_write_and_read_registers(modbus_t *ctx, int write_addr, in
                                                const uint16_t *src, int read_addr, int read_nb,
                                                uint16_t *dest);
 MODBUS_API int modbus_report_slave_id(modbus_t *ctx, int max_dest, uint8_t *dest);
+MODBUS_API int modbus_diagnostics(modbus_t *ctx, uint16_t subfunction, uint16_t *data);
 
 MODBUS_API modbus_mapping_t* modbus_mapping_new_start_address(
     unsigned int start_bits, unsigned int nb_bits,

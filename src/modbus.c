@@ -255,7 +255,8 @@ static uint8_t compute_meta_length_after_function(int function,
     int length;
 
     if (msg_type == MSG_INDICATION) {
-        if (function <= MODBUS_FC_WRITE_SINGLE_REGISTER) {
+        if (function <= MODBUS_FC_WRITE_SINGLE_REGISTER ||
+            function == MODBUS_FC_DIAGNOSTICS) {
             length = 4;
         } else if (function == MODBUS_FC_WRITE_MULTIPLE_COILS ||
                    function == MODBUS_FC_WRITE_MULTIPLE_REGISTERS) {
@@ -275,6 +276,7 @@ static uint8_t compute_meta_length_after_function(int function,
         case MODBUS_FC_WRITE_SINGLE_REGISTER:
         case MODBUS_FC_WRITE_MULTIPLE_COILS:
         case MODBUS_FC_WRITE_MULTIPLE_REGISTERS:
+        case MODBUS_FC_DIAGNOSTICS:
             length = 4;
             break;
         case MODBUS_FC_MASK_WRITE_REGISTER:
@@ -924,6 +926,13 @@ int modbus_reply(modbus_t *ctx, const uint8_t *req,
         errno = ENOPROTOOPT;
         return -1;
         break;
+    case MODBUS_FC_DIAGNOSTICS:
+        if (ctx->debug) {
+            fprintf(stderr, "FIXME Not implemented\n");
+        }
+        errno = ENOPROTOOPT;
+        return -1;
+        break;
     case MODBUS_FC_MASK_WRITE_REGISTER: {
         int mapping_address = address - mb_mapping->start_registers;
 
@@ -1558,6 +1567,39 @@ int modbus_report_slave_id(modbus_t *ctx, int max_dest, uint8_t *dest)
         }
     }
 
+    return rc;
+}
+
+int modbus_diagnostics(modbus_t *ctx, uint16_t subfunction, uint16_t *data)
+{
+    int rc;
+    int req_length;
+    uint8_t req[_MIN_REQ_LENGTH];
+
+    if (ctx == NULL || data == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    req_length = ctx->backend->build_request_basis(ctx, MODBUS_FC_DIAGNOSTICS,
+                                                   subfunction, *data, req);
+    rc = send_msg(ctx, req, req_length);
+    if(rc > 0) {
+        int offset;
+        uint8_t rsp[MAX_MESSAGE_LENGTH];
+        rc = _modbus_receive_msg(ctx, rsp, MSG_CONFIRMATION);
+        if(rc == -1)
+            return -1;
+
+        rc = check_confirmation(ctx, req, rsp, rc);
+        if(rc == -1)
+            return -1;
+
+        offset = ctx->backend->header_length + 3;
+
+        *data = (rsp[offset + 1] << 8) | rsp[offset + 0];
+
+    }
     return rc;
 }
 
