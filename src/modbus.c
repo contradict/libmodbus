@@ -1597,7 +1597,7 @@ int modbus_diagnostics(modbus_t *ctx, uint16_t subfunction, uint16_t *data)
 
         offset = ctx->backend->header_length + 3;
 
-        *data = (rsp[offset + 1] << 8) | rsp[offset + 0];
+        *data = (rsp[offset + 0] << 8) | rsp[offset + 1];
 
     }
     return rc;
